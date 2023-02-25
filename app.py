@@ -3,6 +3,13 @@ from data_structures import *
 import json, pickle, datetime, requests, base64
 from ecdsa import SigningKey, VerifyingKey, SECP256k1
 
+infile = open("parents.txt", 'r')
+parents = [i for i in infile.read().split('\n') if i != '']
+infile.close()
+infile = open("children.txt", 'r')
+parents = [i for i in infile.read().split('\n') if i != '']
+infile.close()
+
 CURVE = SECP256k1
 public_keys = {
     b'MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEeg7UEhlt0z4QmxLZlHtC4kmSkzO/QdDv\nF7Srn5qEPc9SxCrZD2XWD1hLeEB5Ds3l9r7eJjJPky6J1edM6Kqx5A==': 'mingy'
@@ -22,10 +29,10 @@ def transact():
     if not transaction.verify_ecdsa(public, base64.b64decode(data['signature'])):
         return abort(406)
     if transaction.verify(wallets):
-        #print(json.dumps(wallets))
         hehehe = transaction.process(wallets)
-        #print(json.dumps(hehehe))
         ledger.append(transaction)
+        for i in parents:
+            requests.post(f"http://{i}/transact", json=data)
         return "Success"
     if len(ledger) > 10:
         error_ledger = {
