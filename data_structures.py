@@ -1,4 +1,4 @@
-import json
+import json, datetime
 
 class Transaction:
     def __init__(self, sender, recipients):
@@ -20,9 +20,6 @@ class Transaction:
 
         # Return False if sender does not have enough money
         if wallets[self.sender] < self.amount: return False
-
-        #if that does not check out, tell the previous sender (return False)
-        #if that checks out, forward the request to the people in parents.txt (return True)
         return True
     
     def deserde(self):
