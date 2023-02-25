@@ -14,13 +14,27 @@ class Transaction:
 
     def verify(self, wallets):
         # Return False if sender/recipient does not exist
+        print(wallets)
+        print(self.sender not in wallets)
         if self.sender not in wallets: return False
+        print(self.recipients)
         for recipient in self.recipients:
+            print(recipient)
+            print(recipient in wallets)
             if recipient not in wallets: return False
-
+        print(self.amount)
+        print(wallets[self.sender])
         # Return False if sender does not have enough money
         if wallets[self.sender] < self.amount: return False
         return True
+
+    def process(self, wallets):
+        
+        wallets[self.sender] -= self.amount
+        for recipient, credit in self.recipients.items():
+            wallets[recipient] += credit
+
+        return wallets
     
     def deserde(self):
         return json.dumps({

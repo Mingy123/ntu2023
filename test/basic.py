@@ -1,15 +1,12 @@
 import requests
 
-outer_nodes = ["localhost:5000"]
+outer_nodes = ["127.0.0.1:5000"]
 
 for node in outer_nodes:
     try:
         print("Trying node " + node)
         # Do work
-        data = {
-            "sender": 12, # Sent from User ID 12
-            "recipients": {25: 100} # User ID 25 gets 100 dollars
-        }
+        data = {"sender":"alice", "recipients": {"bob": 100}, "source": "127.0.0.1:5002"}
         requests.post("http://"+node+"/transact", json=data)
         print("Sucess!")
         break
