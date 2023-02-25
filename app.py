@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, abort
 from data_structures import *
 import json, pickle, datetime, requests
 
@@ -29,10 +29,11 @@ def transact():
                 "head": ledger[0].hash,
                 "ledger": ledger[1:]
             }
-
-        error_ledger["ledger"] = list(map(lambda led: led.deserde(), error_ledger["ledger"]))
-        print(str(error_ledger))
-        requests.post("http://"+data["source"]+"/error", json=json.dumps(error_ledger))
+        if "source" in data:
+            error_ledger["ledger"] = list(map(lambda led: led.deserde(), error_ledger["ledger"]))
+            print(str(error_ledger))
+            requests.post("http://"+data["source"]+"/error", json=json.dumps(error_ledger))
+        abort(406)
     return "Success"
 
 @app.route("/error", methods=['POST'])
