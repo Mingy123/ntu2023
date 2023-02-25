@@ -1,3 +1,5 @@
+import json
+
 class Transaction:
     def __init__(self, sender, recipients):
         self.sender = sender
@@ -15,7 +17,16 @@ class Transaction:
         #check that the user has that much money
         #if that does not check out, tell the previous sender
         #if that checks out, forward the request to the people in parents.txt
-
         return False
+    
+    def deserde(self):
+        return json.dumps({
+            "sender": self.sender,
+            "recipients": self.recipients,
+        })
+
+def serde(string):
+    data = json.loads(string)
+    return Transaction(data['sender'], data['recipients'])
 
 Transaction("mingy", ["someone": 10])

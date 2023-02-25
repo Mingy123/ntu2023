@@ -12,3 +12,7 @@ def transact():
     recipients = data['recipients']
     ledger.append(Transaction(data['sender'], data['recipients']))
     return "Success"
+
+@app.route("/error", methods=['POST'])
+def error():
+    data = request.json
