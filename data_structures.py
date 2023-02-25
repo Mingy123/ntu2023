@@ -3,21 +3,28 @@ from ecdsa import SigningKey, VerifyingKey, SECP256k1
 CURVE = SECP256k1
 
 class Transaction:
-    def __init__(self, sender, recipients):
+    def __init__(self, sender, recipients, amount=0, timestamp=-1, hash=''):
         print(sender)
         self.sender = sender
-        self.amount = 0
+        self.amount = amount
         for value in recipients.values():
             self.amount += value
         self.recipients = recipients
-        self.timestamp = datetime.datetime.now().timestamp()
-        m = hashlib.sha256()
-        m.update(json.dumps({
-            "sender": sender,
-            "recipients": recipients,
-            "timestamp": self.timestamp
-        }).encode('utf-8'))
-        self.hash = m.hexdigest()
+        if (timestamp == -1):
+            self.timestamp = datetime.datetime.now().timestamp()
+        else:
+            self.timestamp = timestamp
+        if (hash == ''):
+            m = hashlib.sha256()
+            m.update(json.dumps({
+                "sender": sender,
+                "recipients": recipients,
+                "timestamp": self.timestamp
+            }).encode('utf-8'))
+            self.hash = m.hexdigest()
+        else:
+            self.hash = hash
+
 
     def verify_ecdsa(self, public_key: VerifyingKey, signature):
         m = hashlib.sha256()
@@ -53,8 +60,11 @@ class Transaction:
         return json.dumps({
             "sender": self.sender,
             "recipients": self.recipients,
+            "amount": self.amount,
+            "timestamp": self.timestamp,
+            "hash": self.hash
         })
 
 def serde(string):
     data = json.loads(string)
-    return Transaction(data['sender'], data['recipients'])
+    return Transaction(data['sender'], data['recipients'], data['amount'], data['timestamp'], data['hash'])

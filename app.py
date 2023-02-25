@@ -2,12 +2,13 @@ from flask import Flask, request, abort, render_template
 from data_structures import *
 import json, pickle, datetime, requests, base64
 from ecdsa import SigningKey, VerifyingKey, SECP256k1
+import rw
 
 infile = open("parents.txt", 'r')
 parents = [i for i in infile.read().split('\n') if i != '']
 infile.close()
 infile = open("children.txt", 'r')
-parents = [i for i in infile.read().split('\n') if i != '']
+children = [i for i in infile.read().split('\n') if i != '']
 infile.close()
 
 CURVE = SECP256k1
@@ -15,8 +16,13 @@ public_keys = {
     b'MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEeg7UEhlt0z4QmxLZlHtC4kmSkzO/QdDv\nF7Srn5qEPc9SxCrZD2XWD1hLeEB5Ds3l9r7eJjJPky6J1edM6Kqx5A==': 'mingy',
     b'MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEAqV1xDFS0MjbZxFtLSVMgMffgP1q+yM0\n3y68Ix2Q+UFK8dsEKbobK2j3lRVISmMMTsoergK38V6tZuvu1XwMEA==': 'alice'
 }
-wallets = { "mingy": 69, "alice": 2000, "bob":5 }
-ledger = []
+
+wallets, ledger = rw.read()
+print(wallets)
+print(ledger)
+if (wallets == [] and ledger == []):
+    wallets = { "mingy": 69, "alice": 2000, "bob":5 }
+    ledger = []
 app = Flask(__name__)
 
 @app.route("/transact", methods=["POST"])
@@ -34,6 +40,8 @@ def transact():
         ledger.append(transaction)
         for i in parents:
             requests.post(f"http://{i}/transact", json=data)
+        # TEMPORARY: Make sure only 0 writes to file or something idk
+        rw.write(wallets, ledger)
         return "Success"
     if len(ledger) > 10:
         error_ledger = {
