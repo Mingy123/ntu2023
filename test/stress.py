@@ -1,16 +1,15 @@
-import time
-import requests
-import datetime
+import datetime, random, requests, time
 import concurrent.futures
 
-HOST = 'http://127.0.0.1:5002'
+HOST = 'http://127.0.0.1:500'
 API_PATH = '/query?user=mingy'
 ENDPOINT = HOST + API_PATH
 MAX_THREADS = 5005
 CONCURRENT_THREADS = 5000
 
 def send_api_request():
-    r = requests.get(ENDPOINT)
+    url = HOST+str(random.randrange(0, 10))+API_PATH
+    r = requests.get(url)
 
 start_time = datetime.datetime.now()
 print ('Starting:', start_time)

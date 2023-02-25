@@ -4,28 +4,31 @@ import json, pickle, datetime, requests, base64
 from ecdsa import SigningKey, VerifyingKey, SECP256k1
 import rw
 
-infile = open("parents.txt", 'r')
-parents = [i for i in infile.read().split('\n') if i != '']
-infile.close()
-if parents == []:
-    infile = open("slaves.txt", 'r')
-    slaves = [i for i in infile.read().split('\n') if i != '']
-    infile.close()
-
+app = Flask(__name__)
+wallets, ledger = rw.read()
+slaves = []
 SLAVE_BUFFER, sbuf_count = 10, 0
 public_keys = {
     b'MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEeg7UEhlt0z4QmxLZlHtC4kmSkzO/QdDv\nF7Srn5qEPc9SxCrZD2XWD1hLeEB5Ds3l9r7eJjJPky6J1edM6Kqx5A==': 'mingy',
     b'MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEAqV1xDFS0MjbZxFtLSVMgMffgP1q+yM0\n3y68Ix2Q+UFK8dsEKbobK2j3lRVISmMMTsoergK38V6tZuvu1XwMEA==': 'alice'
 }
 
-wallets, ledger = rw.read()
-print(wallets)
-if (wallets == [] and ledger == []):
-    wallets = { "mingy": 69, "alice": 2000, "bob":5 }
-app = Flask(__name__)
+@app.route("/update", methods=['POST'])
+def update():
+    data = request.json
+    part = data['part']
+    ledger += part
+
+@app.route("/make_master", methods=['POST'])
+def make_master():
+    global slaves
+    infile = open("slaves.txt", 'r')
+    slaves = [i for i in infile.read().split('\n') if i != '']
+    infile.close()
 
 @app.route("/transact", methods=["POST"])
 def transact():
+    if not slaves: return abort(418)
     data = request.json
     recipients = data['recipients']
     pubkey = data['pubkey']
@@ -38,16 +41,12 @@ def transact():
     if transaction.verify(wallets):
         hehehe = transaction.process(wallets)
         ledger.append(transaction)
-        if parents:
-            for i in parents:
-                requests.post(f"http://{i}/transact", json=data)
-        else:
-            rw.write(wallets, ledger)
-            sbuf_count += 1
-            if sbuf_count >= SLAVE_BUFFER:
-                part = [i.deserde for i in ledger[-SLAVE_BUFFER:]]
-                for s in slaves:
-                    requests.post(f'http://{s}/update', json={ "ledger": part })
+        rw.write(wallets, ledger)
+        sbuf_count += 1
+        if sbuf_count >= SLAVE_BUFFER:
+            part = [i.deserde for i in ledger[-SLAVE_BUFFER:]]
+            for s in slaves:
+                requests.post(f'http://{s}/update', json={ "ledger": part })
         return "Success"
     print("hello there. something went wrong. i am the parent")
     if len(ledger) > 10:
@@ -63,11 +62,6 @@ def transact():
             "head": ledger[0].hash,
             "ledger": ledger[1:]
         }
-
-    # DEAD CODE: source is supposed to be manually added into the request??
-    #if "source" in data.keys():
-    #    error_ledger["ledger"] = list(map(lambda led: led.deserde(), error_ledger["ledger"]))
-    #    requests.post("http://"+data["source"]+"/error", json=json.dumps(error_ledger))
     error_ledger["ledger"] = list(map(lambda led: led.deserde(), error_ledger["ledger"]))
     req = requests.post(f"http://{request.remote_addr}/error", json=json.dumps(error_ledger))
     if req.status_code == 406:
@@ -80,19 +74,6 @@ def transact():
         req = requests.post(f"http://{request.remote_addr}/error", json=json.dumps(error_ledger))
     return abort(406)
 
-@app.route("/error", methods=['POST'])
-def error():
-    data = request.json
-    thash = data['head']
-    found = False
-    for i in range(len(ledger)):
-        if ledger[i].hash == thash:
-            newlist = data['ledger']
-            ledger = ledger[:i+1] + newlist
-    if not found:
-        abort(406) # Not Acceptable
-
-# DEBUG
 @app.route("/query", methods=["GET"])
 def query():
     user = request.args.get('user')
