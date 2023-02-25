@@ -64,7 +64,7 @@ i love boys
                         "recipients": recipients
                     }).encode('utf-8'))
                     client_hash = m.digest()
-                    sign = base64.b64encode(private.sign(client_hash))
+                    sign = base64.b64encode(private.sign(client_hash)).decode()
                     data = {
                         "pubkey": pub,
                         "signature": sign,
