@@ -4,6 +4,9 @@ import json, pickle, datetime, requests, base64
 from ecdsa import SigningKey, VerifyingKey, SECP256k1
 
 CURVE = SECP256k1
+public_keys = {
+    b'MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEeg7UEhlt0z4QmxLZlHtC4kmSkzO/QdDv\nF7Srn5qEPc9SxCrZD2XWD1hLeEB5Ds3l9r7eJjJPky6J1edM6Kqx5A==': 'mingy'
+}
 wallets = { "mingy": 69, "alice": 2000, "bob":5 }
 ledger = []
 app = Flask(__name__)
@@ -12,8 +15,12 @@ app = Flask(__name__)
 def transact():
     data = request.json
     recipients = data['recipients']
-    transaction = Transaction(data['sender'], data['recipients'])
-    if not transaction.verify_ecdsa(base64.b64decode(data['signature'])):
+    pubkey = data['pubkey']
+    public = VerifyingKey.from_pem(pubkey)
+    print(public, type(public))
+    username = public_keys[public.to_pem()[27:-26]]
+    transaction = Transaction(username, recipients)
+    if not transaction.verify_ecdsa(public, base64.b64decode(data['signature'])):
         print("ecdsa fail")
         return abort(406)
     if transaction.verify(wallets):

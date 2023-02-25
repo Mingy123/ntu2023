@@ -51,13 +51,13 @@ i love boys
                     print("Trying node " + node)
                     m = hashlib.sha256()
                     m.update(json.dumps({
-                        "sender": amount,
+                        "pubkey": public.to_pem()[27:-26].decode(),
                         "recipients": {recipient: amount}
                     }).encode('utf-8'))
                     client_hash = m.digest()
                     sign = base64.b64encode(private.sign(b'mingy'))
                     data = {
-                        "sender":pub,
+                        "pubkey": pub,
                         "signature": sign,
                         "recipients": {
                             recipient.strip(): amount
