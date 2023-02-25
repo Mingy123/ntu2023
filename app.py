@@ -40,7 +40,6 @@ def transact():
         rw.write(wallets, ledger)
         return "Success"
     print("hello there. something went wrong. i am the parent")
-    print(data)
     if len(ledger) > 10:
         error_ledger = {
             "head": ledger[-11].hash,
@@ -58,8 +57,6 @@ def transact():
     # DEAD CODE: source is supposed to be manually added into the request??
     #if "source" in data.keys():
     #    error_ledger["ledger"] = list(map(lambda led: led.deserde(), error_ledger["ledger"]))
-    #    print(error_ledger)
-    #    print("posting yes", "http://"+data["source"]+"/error")
     #    requests.post("http://"+data["source"]+"/error", json=json.dumps(error_ledger))
     error_ledger["ledger"] = list(map(lambda led: led.deserde(), error_ledger["ledger"]))
     requests.post(f"http://{request.remote_addr}/error", json=json.dumps(error_ledger))
@@ -73,9 +70,7 @@ def error():
     for i in range(len(ledger)):
         if ledger[i].hash == thash:
             newlist = data['ledger']
-            #print("\ngetting an error:\n", newlist, '\n\n')
             ledger = ledger[:i+1] + newlist
-            #print("New Ledger:\n"+ledger)
     if not found:
         abort(406) # Not Acceptable
 
