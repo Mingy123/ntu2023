@@ -16,8 +16,13 @@ outer_nodes = ["127.0.0.1:5000"]
 #         print("Trying next node")
 
 def main():
-    pub = open("ecdsa.pub", 'r').read()
-    priv = open("ecdsa", "r").read()
+    filename = input("Where key? ")
+    infile = open(filename+".pub", 'r')
+    pub = infile.read()
+    infile.close()
+    infile = open(filename, 'r')
+    priv = infile.read()
+    infile.close()
     private = SigningKey.from_pem(priv)
     sign = private.sign(b'among us')
     public = VerifyingKey.from_pem(pub)
@@ -37,15 +42,18 @@ i love boys
 
         option = input("> ")
         if option == "1":
-            recipient = input("2 who: ")
-            while True:
-                amount = input("hao muhc: ")
+            recipients = {}
+            who = input("to who? (empty to finish) ").strip()
+            if who == '':
+                print("thats nobody")
+                continue
+            while who != '':
                 try:
-                    amount = int(amount)
-                except Exception as e:
-                    print("that isnt a numbnr,,,,")
-                else:
-                    break
+                    amt = int(input("how much: "))
+                    recipients[who] = amt
+                except:
+                    print("not a number")
+                who = input("to who? (empty to finish) ").strip()
 
             for node in outer_nodes:
                 try:
@@ -53,16 +61,14 @@ i love boys
                     m = hashlib.sha256()
                     m.update(json.dumps({
                         "pubkey": public.to_pem()[27:-26].decode(),
-                        "recipients": {recipient: amount}
+                        "recipients": recipients
                     }).encode('utf-8'))
                     client_hash = m.digest()
-                    sign = base64.b64encode(private.sign(b'mingy'))
+                    sign = base64.b64encode(private.sign(client_hash))
                     data = {
                         "pubkey": pub,
                         "signature": sign,
-                        "recipients": {
-                            recipient.strip(): amount
-                        }
+                        "recipients": recipients
                     }
                     response = requests.post(f"http://{node}/transact", json=data)
                     if response.text == "Success":

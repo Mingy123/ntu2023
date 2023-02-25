@@ -17,16 +17,14 @@ def transact():
     recipients = data['recipients']
     pubkey = data['pubkey']
     public = VerifyingKey.from_pem(pubkey)
-    print(public, type(public))
     username = public_keys[public.to_pem()[27:-26]]
     transaction = Transaction(username, recipients)
     if not transaction.verify_ecdsa(public, base64.b64decode(data['signature'])):
-        print("ecdsa fail")
         return abort(406)
     if transaction.verify(wallets):
-        print(json.dumps(wallets))
+        #print(json.dumps(wallets))
         hehehe = transaction.process(wallets)
-        print(json.dumps(hehehe))
+        #print(json.dumps(hehehe))
         ledger.append(transaction)
         return "Success"
     if len(ledger) > 10:
@@ -44,7 +42,7 @@ def transact():
         }
     if "source" in data:
         error_ledger["ledger"] = list(map(lambda led: led.deserde(), error_ledger["ledger"]))
-        print(error_ledger)
+        #print(error_ledger)
         requests.post("http://"+data["source"]+"/error", json=json.dumps(error_ledger))
     return abort(406)
 
@@ -56,9 +54,9 @@ def error():
     for i in range(len(ledger)):
         if ledger[i].hash == thash:
             newlist = data['ledger']
-            print("\ngetting an error:\n", newlist, '\n\n')
+            #print("\ngetting an error:\n", newlist, '\n\n')
             ledger = ledger[:i+1] + newlist
-            print("New Ledger:\n"+ledger)
+            #print("New Ledger:\n"+ledger)
     if not found:
         abort(406) # Not Acceptable
 

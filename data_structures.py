@@ -26,25 +26,25 @@ class Transaction:
             "recipients": self.recipients
         }).encode('utf-8'))
         client_hash = m.digest()
-        return public_key.verify(signature, b'mingy')
+        return public_key.verify(signature, client_hash)
 
     def verify(self, wallets):
         # Return False if you try to transact a negative amount
         for amt in self.recipients.values():
             if amt < 0: return False
         # Return False if sender/recipient does not exist
-        print(wallets)
-        print(self.sender not in wallets)
+        #print(wallets)
+        #print(self.sender not in wallets)
         if self.sender not in wallets:
-            print("not instance\n", self.sender, wallets)
+            #print("not instance\n", self.sender, wallets)
             return False
-        print(self.recipients)
+        #print(self.recipients)
         for recipient in self.recipients:
-            print(recipient)
-            print(recipient in wallets)
+            #print(recipient)
+            #print(recipient in wallets)
             if recipient not in wallets: return False
-        print(self.amount)
-        print(wallets[self.sender])
+        #print(self.amount)
+        #print(wallets[self.sender])
         # Return False if sender does not have enough money
         if wallets[self.sender] < self.amount: return False
         return True
