@@ -4,7 +4,7 @@ CURVE = SECP256k1
 
 class Transaction:
     def __init__(self, sender, recipients, amount=0, timestamp=-1, hash=''):
-        print(sender)
+        print('sender:', sender)
         self.sender = sender
         self.amount = amount
         for value in recipients.values():

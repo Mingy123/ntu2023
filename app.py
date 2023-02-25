@@ -7,9 +7,6 @@ import rw
 infile = open("parents.txt", 'r')
 parents = [i for i in infile.read().split('\n') if i != '']
 infile.close()
-infile = open("children.txt", 'r')
-children = [i for i in infile.read().split('\n') if i != '']
-infile.close()
 
 CURVE = SECP256k1
 public_keys = {
@@ -19,10 +16,8 @@ public_keys = {
 
 wallets, ledger = rw.read()
 print(wallets)
-print(ledger)
 if (wallets == [] and ledger == []):
     wallets = { "mingy": 69, "alice": 2000, "bob":5 }
-    ledger = []
 app = Flask(__name__)
 
 @app.route("/transact", methods=["POST"])
@@ -34,6 +29,7 @@ def transact():
     username = public_keys[public.to_pem()[27:-26]]
     transaction = Transaction(username, recipients)
     if not transaction.verify_ecdsa(public, base64.b64decode(data['signature'])):
+        print("ecdsa fail")
         return abort(406)
     if transaction.verify(wallets):
         hehehe = transaction.process(wallets)
@@ -43,23 +39,30 @@ def transact():
         # TEMPORARY: Make sure only 0 writes to file or something idk
         rw.write(wallets, ledger)
         return "Success"
+    print("hello there. something went wrong. i am the parent")
+    print(data)
     if len(ledger) > 10:
         error_ledger = {
             "head": ledger[-11].hash,
             "ledger": ledger[-10:]
         }
     elif len(ledger) == 0:
-        # bruh
+        print("length of ledger is 0 what now")
         return abort(406)
     else:
         error_ledger = {
             "head": ledger[0].hash,
             "ledger": ledger[1:]
         }
-    if "source" in data:
-        error_ledger["ledger"] = list(map(lambda led: led.deserde(), error_ledger["ledger"]))
-        #print(error_ledger)
-        requests.post("http://"+data["source"]+"/error", json=json.dumps(error_ledger))
+
+    # DEAD CODE: source is supposed to be manually added into the request??
+    #if "source" in data.keys():
+    #    error_ledger["ledger"] = list(map(lambda led: led.deserde(), error_ledger["ledger"]))
+    #    print(error_ledger)
+    #    print("posting yes", "http://"+data["source"]+"/error")
+    #    requests.post("http://"+data["source"]+"/error", json=json.dumps(error_ledger))
+    error_ledger["ledger"] = list(map(lambda led: led.deserde(), error_ledger["ledger"]))
+    requests.post(f"http://{request.remote_addr}/error", json=json.dumps(error_ledger))
     return abort(406)
 
 @app.route("/error", methods=['POST'])

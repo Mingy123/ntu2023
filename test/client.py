@@ -1,7 +1,7 @@
 import requests, hashlib, json, base64, traceback, random
 from ecdsa import SigningKey, VerifyingKey, SECP256k1
 
-outer_nodes = ["127.0.0.1:5000"]
+outer_nodes = ["127.0.0.1:5003"]
 
 # for node in outer_nodes:
 #     try:
@@ -55,31 +55,30 @@ i love boys
                     print("not a number")
                 who = input("to who? (empty to finish) ").strip()
 
-            for node in outer_nodes:
-                try:
-                    print("Trying node " + node)
-                    m = hashlib.sha256()
-                    m.update(json.dumps({
-                        "pubkey": public.to_pem()[27:-26].decode(),
-                        "recipients": recipients
-                    }).encode('utf-8'))
-                    client_hash = m.digest()
-                    sign = base64.b64encode(private.sign(client_hash)).decode()
-                    data = {
-                        "pubkey": pub,
-                        "signature": sign,
-                        "recipients": recipients
-                    }
-                    response = requests.post(f"http://{node}/transact", json=data)
-                    if response.text == "Success":
-                        print("yipee!!!!")
-                        break
-
-                    else:
-                        print(f"u r stupid,,, {response.text}")
-                except Exception as e:
-                    traceback.print_exception(type(e), e, e.__traceback__)
-                    print("Trying next node")
+            try:
+                node = random.choice(outer_nodes)
+                print("Trying node " + node)
+                m = hashlib.sha256()
+                m.update(json.dumps({
+                    "pubkey": public.to_pem()[27:-26].decode(),
+                    "recipients": recipients
+                }).encode('utf-8'))
+                client_hash = m.digest()
+                sign = base64.b64encode(private.sign(client_hash)).decode()
+                data = {
+                    "pubkey": pub,
+                    "signature": sign,
+                    "recipients": recipients
+                }
+                response = requests.post(f"http://{node}/transact", json=data)
+                if response.text == "Success":
+                    print("yipee!!!!")
+                    continue
+                else:
+                    print(f"u r stupid,,, {response.text}")
+            except Exception as e:
+                traceback.print_exception(type(e), e, e.__traceback__)
+                print("Trying next node")
 
         elif option == "2":
             user = input("who: ")

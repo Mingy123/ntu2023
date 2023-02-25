@@ -1,6 +1,7 @@
 import json 
+from data_structures import serde
 
-filename = "idonthaveagoodfilename.txt"
+filename = "wallet.txt"
 
 def write(wallets, ledger):
     f = open(filename, 'w')
@@ -23,8 +24,9 @@ def read():
         f.close()
         wallets = json.loads(lines[0])
         ledger = json.loads(lines[1])
-        return wallets, ledger
-    except:
+        return wallets, [serde(i) for i in ledger]
+    except Exception as e:
+        print(e)
         return [], []
 
 
