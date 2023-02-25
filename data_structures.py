@@ -1,4 +1,4 @@
-import json, datetime
+import json, datetime, pickle, hashlib
 
 class Transaction:
     def __init__(self, sender, recipients):
