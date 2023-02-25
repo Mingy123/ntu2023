@@ -1,7 +1,9 @@
 from flask import Flask, request, abort, render_template
 from data_structures import *
 import json, pickle, datetime, requests
+from ecdsa import SigningKey, VerifyingKey, SECP256k1
 
+CURVE = SECP256k1
 wallets = { "mingy": 69, "alice": 2000, "bob":5 }
 ledger = []
 app = Flask(__name__)

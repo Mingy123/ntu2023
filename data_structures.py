@@ -1,16 +1,27 @@
 import json, datetime, pickle, hashlib
+from ecdsa import SigningKey, VerifyingKey, SECP256k1
+CURVE = SECP256k1
 
 class Transaction:
-    def __init__(self, sender, recipients):
+    def __init__(self, sender, signature, recipients):
         self.sender = sender
+        self.signature = signature
         self.amount = 0
         for value in recipients.values():
             self.amount += value
         self.recipients = recipients
         self.timestamp = datetime.datetime.now()
         m = hashlib.sha256()
-        m.update(pickle.dumps(self))
+        m.update(json.dumps({
+            "sender": sender,
+            "recipients": recipients,
+            "timestamp": self.timestamp
+        }).encode('utf-8'))
         self.hash = m.hexdigest()
+
+    def verify_ecdsa(self):
+        ecdsa_key = VerifyingKey.from_pem(self.sender)
+        return ecdsa_key.verify(self.signature, self.hash)
 
     def verify(self, wallets):
         # Return False if sender/recipient does not exist
