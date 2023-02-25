@@ -3,14 +3,13 @@ from ecdsa import SigningKey, VerifyingKey, SECP256k1
 CURVE = SECP256k1
 
 class Transaction:
-    def __init__(self, sender, signature, recipients):
+    def __init__(self, sender, recipients):
         self.sender = sender
-        self.signature = signature
         self.amount = 0
         for value in recipients.values():
             self.amount += value
         self.recipients = recipients
-        self.timestamp = datetime.datetime.now()
+        self.timestamp = datetime.datetime.now().timestamp()
         m = hashlib.sha256()
         m.update(json.dumps({
             "sender": sender,
@@ -19,13 +18,24 @@ class Transaction:
         }).encode('utf-8'))
         self.hash = m.hexdigest()
 
-    def verify_ecdsa(self):
+    def verify_ecdsa(self, signature):
+        m = hashlib.sha256()
+        m.update(json.dumps({
+            "sender": self.sender,
+            "recipients": self.recipients
+        }).encode('utf-8'))
+        client_hash = m.digest()
+        print(signature)
+        print(type(signature))
         ecdsa_key = VerifyingKey.from_pem(self.sender)
-        return ecdsa_key.verify(self.signature, self.hash)
+        return ecdsa_key.verify(signature, b'mingy')
 
     def verify(self, wallets):
         # Return False if you try to transact a negative amount
-        if self.amount < 0: return False
+        for amt in self.recipients.values():
+            if amt < 0:
+                print(f"{amt} is < 0")
+                return False
         # Return False if sender/recipient does not exist
         print(wallets)
         print(self.sender not in wallets)

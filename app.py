@@ -1,6 +1,6 @@
 from flask import Flask, request, abort, render_template
 from data_structures import *
-import json, pickle, datetime, requests
+import json, pickle, datetime, requests, base64
 from ecdsa import SigningKey, VerifyingKey, SECP256k1
 
 CURVE = SECP256k1
@@ -13,6 +13,9 @@ def transact():
     data = request.json
     recipients = data['recipients']
     transaction = Transaction(data['sender'], data['recipients'])
+    if not transaction.verify_ecdsa(base64.b64decode(data['signature'])):
+        print("ecdsa fail")
+        return abort(406)
     if transaction.verify(wallets):
         print(json.dumps(wallets))
         hehehe = transaction.process(wallets)
