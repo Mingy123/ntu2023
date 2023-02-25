@@ -1,7 +1,7 @@
-import requests, hashlib, json, base64, traceback
+import requests, hashlib, json, base64, traceback, random
 from ecdsa import SigningKey, VerifyingKey, SECP256k1
 
-outer_nodes = ["127.0.0.1:5002"]
+outer_nodes = ["127.0.0.1:5000"]
 
 # for node in outer_nodes:
 #     try:
@@ -32,6 +32,7 @@ i love boys
 1) give monie
 2) check monie
 3) NEW name!!!!!!
+4) exit
 """)
 
         option = input("> ")
@@ -55,7 +56,7 @@ i love boys
                         "recipients": {recipient: amount}
                     }).encode('utf-8'))
                     client_hash = m.digest()
-                    sign = base64.b64encode(private.sign(b'mingy')).decode("utf-8")
+                    sign = base64.b64encode(private.sign(b'mingy'))
                     data = {
                         "pubkey": pub,
                         "signature": sign,
@@ -76,9 +77,19 @@ i love boys
 
         elif option == "2":
             user = input("who: ")
-            print(requests.get(f"http://{outer_nodes[0]}/query", {"user":user.strip()}).text)
+            print(requests.get(f"http://{random.choice(outer_nodes)}/query", {"user":user.strip()}).text)
         elif option == "3":
-            pub = input("who r u NOW: ").strip()
+            private = SigningKey.generate(curve=SECP256k1)
+            public = private.verifying_key
+            filename = input("Enter file to write public key to: ")
+            outfile = open(filename, 'w')
+            outfile.write(private.to_pem().decode())
+            outfile.close()
+            outfile = open(filename+".pub", 'w')
+            outfile.write(public.to_pem().decode())
+            outfile.close()
+        elif option == "4":
+            break
         else:
             print("u r stupid")
 

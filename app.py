@@ -28,26 +28,25 @@ def transact():
         hehehe = transaction.process(wallets)
         print(json.dumps(hehehe))
         ledger.append(transaction)
-    else:
-        if len(ledger) > 10:
-            error_ledger = {
-                "head": ledger[-11].hash,
-                "ledger": ledger[-10:]
-            }
-        elif len(ledger) == 0:
-            # bruh
-            return abort(406)
-        else:
-            error_ledger = {
-                "head": ledger[0].hash,
-                "ledger": ledger[1:]
-            }
-        if "source" in data:
-            error_ledger["ledger"] = list(map(lambda led: led.deserde(), error_ledger["ledger"]))
-            print(error_ledger)
-            requests.post("http://"+data["source"]+"/error", json=json.dumps(error_ledger))
+        return "Success"
+    if len(ledger) > 10:
+        error_ledger = {
+            "head": ledger[-11].hash,
+            "ledger": ledger[-10:]
+        }
+    elif len(ledger) == 0:
+        # bruh
         return abort(406)
-    return "Success"
+    else:
+        error_ledger = {
+            "head": ledger[0].hash,
+            "ledger": ledger[1:]
+        }
+    if "source" in data:
+        error_ledger["ledger"] = list(map(lambda led: led.deserde(), error_ledger["ledger"]))
+        print(error_ledger)
+        requests.post("http://"+data["source"]+"/error", json=json.dumps(error_ledger))
+    return abort(406)
 
 @app.route("/error", methods=['POST'])
 def error():
