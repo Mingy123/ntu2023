@@ -24,6 +24,8 @@ class Transaction:
         return ecdsa_key.verify(self.signature, self.hash)
 
     def verify(self, wallets):
+        # Return False if you try to transact a negative amount
+        if self.amount < 0: return False
         # Return False if sender/recipient does not exist
         print(wallets)
         print(self.sender not in wallets)
