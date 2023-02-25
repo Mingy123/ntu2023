@@ -12,12 +12,18 @@ class Transaction:
         m.update(pickle.dumps(self))
         self.hash = m.hexdigest()
 
-    def verify(self):
-        #check that all recipients and valid
-        #check that the user has that much money
-        #if that does not check out, tell the previous sender
-        #if that checks out, forward the request to the people in parents.txt
-        return False
+    def verify(self, wallets):
+        # Return False if sender/recipient does not exist
+        if self.sender not in wallets: return False
+        for recipient in self.recipients:
+            if recipient not in wallets: return False
+
+        # Return False if sender does not have enough money
+        if wallets[self.sender] < self.amount: return False
+
+        #if that does not check out, tell the previous sender (return False)
+        #if that checks out, forward the request to the people in parents.txt (return True)
+        return True
     
     def deserde(self):
         return json.dumps({
@@ -28,5 +34,3 @@ class Transaction:
 def serde(string):
     data = json.loads(string)
     return Transaction(data['sender'], data['recipients'])
-
-Transaction("mingy", ["someone": 10])
