@@ -9,10 +9,12 @@ class Transaction:
         for value in recipients.values():
             self.amount += value
         self.recipients = recipients
+
         if (timestamp == -1):
             self.timestamp = datetime.datetime.now().timestamp()
         else:
             self.timestamp = timestamp
+
         if (hash == ''):
             m = hashlib.sha256()
             m.update(json.dumps({
@@ -38,11 +40,13 @@ class Transaction:
         # transact a negative amount
         for amt in self.recipients.values():
             if amt < 0: return False
+
         # sender/recipient does not exist
         if self.sender not in wallets:
             return False
         for recipient in self.recipients:
             if recipient not in wallets: return False
+            
         # sender does not have enough money
         if wallets[self.sender] < self.amount: return False
         return True

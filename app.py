@@ -4,13 +4,12 @@ import json, pickle, datetime, requests, base64
 from ecdsa import SigningKey, VerifyingKey, SECP256k1
 import rw
 
-infile = open("parents.txt", 'r')
-parents = [i for i in infile.read().split('\n') if i != '']
-infile.close()
-if parents == []:
-    infile = open("slaves.txt", 'r')
-    slaves = [i for i in infile.read().split('\n') if i != '']
-    infile.close()
+with open("parents.txt", 'r') as infile:
+    parents = [i for i in infile.read().split('\n') if i != '']
+    
+if not parents:
+    with open("slaves.txt", 'r') as infile:
+        slaves = [i for i in infile.read().split('\n') if i != '']
 
 SLAVE_BUFFER, sbuf_count = 10, 0
 public_keys = {
@@ -32,9 +31,11 @@ def transact():
     public = VerifyingKey.from_pem(pubkey)
     username = public_keys[public.to_pem()[27:-26]]
     transaction = Transaction(username, recipients)
+
     if not transaction.verify_ecdsa(public, base64.b64decode(data['signature'])):
         print("ecdsa fail")
         return abort(406)
+    
     if transaction.verify(wallets):
         hehehe = transaction.process(wallets)
         ledger.append(transaction)
@@ -49,16 +50,20 @@ def transact():
                 part = [i.deserde for i in ledger[-SLAVE_BUFFER:]]
                 for s in slaves:
                     requests.post(f'http://{s}/update', json={ "ledger": part })
+
         return "Success"
+    
     print("hello there. something went wrong. i am the parent")
     if len(ledger) > 10:
         error_ledger = {
             "head": ledger[-11].hash,
             "ledger": ledger[-10:]
         }
+
     elif len(ledger) == 0:
         print("length of ledger is 0 what now")
         return abort(406)
+    
     else:
         error_ledger = {
             "head": ledger[0].hash,
@@ -90,6 +95,7 @@ def error():
         if ledger[i].hash == thash:
             newlist = data['ledger']
             ledger = ledger[:i+1] + newlist
+            
     if not found:
         abort(406) # Not Acceptable
 
