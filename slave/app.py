@@ -43,7 +43,6 @@ def transact():
                 requests.post(f"http://{i}/transact", json=data)
         else:
             rw.write(wallets, ledger)
-            global sbuf_count
             sbuf_count += 1
             if sbuf_count >= SLAVE_BUFFER:
                 part = [i.deserde for i in ledger[-SLAVE_BUFFER:]]
