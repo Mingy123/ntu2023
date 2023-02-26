@@ -11,13 +11,6 @@ def write(wallets, ledger):
     f.close()
 
 def read():
-    # f = open(filename, 'r')
-    # lines = f.readlines()
-    # print(lines)
-    # f.close()
-    # wallets = json.loads(lines[0])
-    # ledger = json.loads(lines[1])
-    # return wallets, ledger
     try:
         f = open(filename, 'r')
         lines = f.readlines()

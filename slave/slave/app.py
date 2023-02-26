@@ -43,6 +43,7 @@ def transact():
                 requests.post(f"http://{i}/transact", json=data)
         else:
             rw.write(wallets, ledger)
+            global sbuf_count
             sbuf_count += 1
             if sbuf_count >= SLAVE_BUFFER:
                 part = [i.deserde for i in ledger[-SLAVE_BUFFER:]]
@@ -91,6 +92,15 @@ def error():
             ledger = ledger[:i+1] + newlist
     if not found:
         abort(406) # Not Acceptable
+
+@app.route("/create", methods=["POST"])
+def create():
+    data = request.json
+    username = data['username']
+    if (username in wallets):
+        return abort(406) # account already exists
+    wallets[username] = 0
+    return "Success"
 
 # DEBUG
 @app.route("/query", methods=["GET"])

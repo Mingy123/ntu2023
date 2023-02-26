@@ -93,6 +93,15 @@ def error():
     if not found:
         abort(406) # Not Acceptable
 
+@app.route("/create", methods=["POST"])
+def create():
+    data = request.json
+    username = data['username']
+    if (username in wallets):
+        return abort(406) # account already exists
+    wallets[username] = 0
+    return "Success"
+
 # DEBUG
 @app.route("/query", methods=["GET"])
 def query():
