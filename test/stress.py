@@ -8,8 +8,7 @@ MAX_THREADS = 6
 CONCURRENT_THREADS = 10000
 
 def send_api_request():
-    url = HOST+str(random.randrange(0, 7))+API_PATH
-    r = requests.get(url)
+    r = requests.get("http://10.103.23.169:5001/query?user=mingy")
 
 start_time = datetime.datetime.now()
 print ('Starting:', start_time)

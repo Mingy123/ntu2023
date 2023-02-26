@@ -1,7 +1,7 @@
 import requests, hashlib, json, base64, traceback, random
 from ecdsa import SigningKey, VerifyingKey, SECP256k1
 
-outer_nodes = ["127.0.0.1:5003"]
+outer_nodes = ["127.0.0.1:5000"]
 
 # for node in outer_nodes:
 #     try:
