@@ -17,12 +17,12 @@ outer_nodes = ["127.0.0.1:5000"]
 
 def main():
     username = input("Please enter your username to log in: ")
-    infile = open(username+".pub", 'r')
-    pub = infile.read()
-    infile.close()
-    infile = open(username, 'r')
-    priv = infile.read()
-    infile.close()
+    with open(f"{username}.pub", 'r') as infile:
+        pub = infile.read()
+
+    with open(username, 'r') as infile:
+        priv = infile.read()
+
     private = SigningKey.from_pem(priv)
     test_sign = b'among us'
     sign = private.sign(test_sign)
@@ -32,7 +32,7 @@ def main():
         return
 
 
-    while(True):
+    while True:
         print("""
 Welcome to T Pay!
 1) Transfer someone money
@@ -88,12 +88,12 @@ Welcome to T Pay!
             private = SigningKey.generate(curve=SECP256k1)
             public = private.verifying_key
             filename = input("Enter your new username: ")
-            outfile = open(filename, 'w')
-            outfile.write(private.to_pem().decode())
-            outfile.close()
-            outfile = open(filename+".pub", 'w')
-            outfile.write(public.to_pem().decode())
-            outfile.close()
+            with open(filename, 'w') as outfile:
+                outfile.write(private.to_pem().decode())
+
+            with open(f"{filename}.pub", 'w') as outfile:
+                outfile.write(public.to_pem().decode())
+
         elif option == "4":
             print("Thank you for using T Pay!")
             break
